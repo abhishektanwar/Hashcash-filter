@@ -104,7 +104,8 @@
       }
 
       function appendMessageRow(message) {
-        applyLabel();
+        //applyLabel();
+        createLabel();
         $('.table-inbox tbody').append(
           '<tr>\
             <td>'+getHeader(message.payload.headers, 'From')+'</td>\
@@ -174,7 +175,7 @@
                 }
 
         }).then(function(){console.log("done")});
-        createLabel();
+        
       }
 
       function createLabel(){
