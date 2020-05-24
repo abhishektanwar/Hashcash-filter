@@ -12,12 +12,20 @@
 		],
 		"persistent": false
 	},
+	"content_security_policy": "script-src 'self' 'unsafe-eval' https://apis.google.com; object-src 'self'",
 	"oauth2": {
 		"client_id": "224793704861-cgkod90mhgocv54usea0dc3fcq3h59mp.apps.googleusercontent.com",
 		"scopes":["https://www.googleapis.com/auth/contacts.readonly","https://www.googleapis.com/auth/gmail.readonly",
 			"https://www.googleapis.com/auth/gmail.modify", "https://www.googleapis.com/auth/gmail.labels"]
 	},
 	"permissions": [
-		"identity"
+		"identity",
+		"tabs",
+		"https://www.googleapis.com/",
+		"https://accounts.google.com/",
+		"https://www.googleapis.com/",
+		"https://mail.google.com/",
+		"https://inbox.google.com/",
+		"https://apis.google.com/"
 	]
 }

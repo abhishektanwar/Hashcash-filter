@@ -1,7 +1,8 @@
 <html>
 	<head>
 		<title>FriendBlock</title>
-		<script type="text/javascript" src="oauth.js"></script>
+		{% comment %} <script type="text/javascript" src="oauth.js"></script> {% endcomment %}
+		<script src="https://apis.google.com/js/api.js"></script>
 		<style>
 			button {
 				padding: 10px;
@@ -13,5 +14,9 @@
 	<body>
 		<button>FriendBlock Contacts</button>
 		<div id="friendDiv"></div>
+		
+
+		<button id="one">authorize and load</button>
+		<button id="two">execute</button>
 	</body>
 </html>
