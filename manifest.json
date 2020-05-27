@@ -6,6 +6,16 @@
 	"browser_action": {
 		"default_title": "FriendBlock, friends face's in a block."
 	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://mail.google.com/*",
+				"https://inbox.google.com/*"
+			],
+			"js": ["inboxsdk.js","content.js"],
+			"run_at": "document_end"
+		}
+	],
 	"background": {
 		"scripts": [
 			"background.js"
@@ -21,6 +31,7 @@
 	"permissions": [
 		"identity",
 		"tabs",
+		"https://hashcash3api.herokuapp.com/",
 		"https://www.googleapis.com/",
 		"https://accounts.google.com/",
 		"https://www.googleapis.com/",

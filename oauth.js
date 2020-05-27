@@ -237,13 +237,12 @@ window.onload = function(){
 	document.querySelector('button').addEventListener('click',function(){
 
 	})
-
+	
 	var url="https://accounts.google.com/o/oauth2/v2/auth?client_id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/gmail.send&redirect_uri=http://localhost&access_type=offline";
 	var gapiGETRequest = function (gapiRequestURL)
 		{
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.open( "GET", gapiRequestURL, false );
-
 			xmlHttp.send( null );
 			return xmlHttp.responseText;
 	}
@@ -252,28 +251,165 @@ window.onload = function(){
 	var authorization_url;
 	var auth_code_parameter_url;
 	var code_param;
+	var check=1;
+	var heroku_apiemail_url = "https://hashcash3api.herokuapp.com/listemailaddress";
 	function handleUpdated(tabId, changeInfo, tab) {
-		
-		if (changeInfo.status == 'complete' && tab.status == 'complete' && tab.url != undefined && tab.id == tab_length.id){
-			console.log("Updated tab: " + tabId);
-			console.log("Changed attributes: ");
-			console.log(changeInfo);
-			console.log("New tab Info: ");
-			console.log(tab);
-			authorization_url = tab.url;
-			console.log(authorization_url);
-			console.log("asfasgag",tab.id,tab_length.id);
-			var split_authurl = authorization_url.split('?');
-			auth_code_parameter_url = "?"+split_authurl[1];
-			var urlParams = new URLSearchParams(auth_code_parameter_url);
-			code_param = urlParams.get('code');
-			console.log(code_param);
+		if (check==1){
+			if (changeInfo.status == 'complete' && tab.status == 'complete' && tab.url != undefined && tab.id == tab_length.id){
+				console.log("Updated tab: " + tabId);
+				console.log("Changed attributes: ");
+				console.log(changeInfo);
+				console.log("New tab Info: ");
+				console.log(tab);
+				authorization_url = tab.url;
+				console.log(authorization_url);
+				console.log("asfasgag",tab.id,tab_length.id);
+				var split_authurl = authorization_url.split('?');
+				auth_code_parameter_url = "?"+split_authurl[1];
+				var urlParams = new URLSearchParams(auth_code_parameter_url);
+				code_param = urlParams.get('code');
+				console.log(code_param);
+
+			}
+			// if(code_param!=undefined){
+			// 	var ress = gapiPOSTRequest(post_authtoken);
+			// 	console.log(ress);
+			// 	var access_token=JSON.parse(ress).access_token;
+			// 	console.log("access_token: ",access_token);
+			// 	var user_get_profile=getUserProfile(access_token);
+			// 	var user_email_address_gapi=JSON.parse(user_get_profile).email_address;
+			// 	var user_email_heroku=gapiGETRequest()
+			// 	var heroku_list_email = gapiGETRequest(heroku_apiemail_url);
+			// 	console.log(heroku_list_email);
+			// 	check=0;
+				
+			// 	var createUseremaildb=createUserEmailDB(user_get_profile);
+			// 	console.log("createUseremaildb post request response",createUseremaildb);
+			// }
+			if(code_param!=undefined){
+				check=0;
+				var ress = gapiPOSTRequest(post_authtoken);
+				console.log(ress);
+				var access_token=JSON.parse(ress).access_token;
+				console.log("access_token: ",access_token);
+				var user_get_profile=getUserProfile(access_token);
+				console.log(user_get_profile);
+				var user_email_address_gapi=JSON.parse(user_get_profile).emailAddress;
+				var user_emaildetail_heroku_URL = "https://hashcash3api.herokuapp.com/detailemailaddress/" + user_email_address_gapi; 
+				var user_AuthorizationTokensdetail_heroku_URL = "https://hashcash3api.herokuapp.com/detailAuthorizationTokens/" + user_email_address_gapi;
+				var user_emaildetail_heroku=gapiGETRequest(user_emaildetail_heroku_URL);
+				console.log(user_emaildetail_heroku);
+				if(String(JSON.parse(user_emaildetail_heroku).found) == "false"){
+					console.log("no data received");
+					var createUseremaildb=createUserEmailDB(user_get_profile);
+					
+					console.log("createUseremaildb post request response",createUseremaildb);
+					// var createTokensDB = gapiPOSTRequest()
+					// {
+					// 	var xmlHttp = new XMLHttpRequest();
+					// 	xmlHttp.open( "POST", createTokensDB_URL, false );
+					// 	xmlHttp.setRequestHeader("Content-Type", "application/json");
+					// 	// var body = "code="+code_param+"&client-id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&client_secret=UvqOfM7hi3CUoWgvCumI8I10&grant_type=authorization_code&redirect_uri=http://localhost";
+					// 	xmlHttp.onload = function() {
+					// 		console.log('loaded' + xmlHttp.responseText);
+					// 		// console.log(body);
+					// 	};
+					// 	xmlHttp.send(JSON.stringify({
+					// 		"email_address_key":JSON.parse(user_emaildetail_heroku).id,
+					// 		"access_token":JSON.parse(ress).access_token,
+					// 		"refresh_token":JSON.parse(ress).refresh_token,
+					// 	}));
+					// 	return xmlHttp.responseText;
+					// }
+					var createTokensDBresponse = createTokensDB(createUseremaildb,ress);
+					console.log("createToekndb res",createTokensDBresponse);
+					var createInboxLabel = createGmailInboxLabel(access_token);
+					console.log("Inbox Label",createInboxLabel);
+					var createLabelDBresponse = createLabelDB(createUseremaildb,createInboxLabel);
+				}
+				else{
+					console.log("data found");
+				}
+				var heroku_list_email = gapiGETRequest(heroku_apiemail_url);
+				console.log(heroku_list_email);
+				
+				
+				
+			}
 		}
-		if(code_param!=undefined){
-			var ress = gapiPOSTRequest(post_authtoken);
-			console.log(ress);
-		}
+	}
+	function createGmailInboxLabel(access_token){
+		var createLabel_URL="https://www.googleapis.com/gmail/v1/users/me/labels?&access_token=" + access_token + "&key=AIzaSyBZKUCoVLJjcFdDNXBhXUCPVDoKNzMgpew";
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open( "POST", createLabel_URL, false );
+		xmlHttp.setRequestHeader("Content-Type", "application/json");
+		// var body = "code="+code_param+"&client-id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&client_secret=UvqOfM7hi3CUoWgvCumI8I10&grant_type=authorization_code&redirect_uri=http://localhost";
+		xmlHttp.onload = function() {
+			console.log('loaded createGmailInboxLabel fn' + xmlHttp.responseText);
+			// console.log(body);
+		};
+		xmlHttp.send(JSON.stringify({
+			"labelListVisibility": "labelShow",
+			"messageListVisibility": "show",
+			"name": "HASHCASHasfaseac4"
+		}));
 		
+		return xmlHttp.responseText;
+	}
+	function createLabelDB(user_email_detail,createInboxLabel){
+		var createLabelDB_URL = "https://hashcash3api.herokuapp.com/listlabelid";
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open( "POST", createLabelDB_URL, false );
+		xmlHttp.setRequestHeader("Content-Type", "application/json");
+		// var body = "code="+code_param+"&client-id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&client_secret=UvqOfM7hi3CUoWgvCumI8I10&grant_type=authorization_code&redirect_uri=http://localhost";
+		xmlHttp.onload = function() {
+			console.log('loaded labelDB func' + xmlHttp.responseText);
+			// console.log(body);
+		};
+		xmlHttp.send(JSON.stringify({
+			"email_address_key":JSON.parse(user_email_detail).id,
+			"label_id":JSON.parse(createInboxLabel).id,
+		}));
+		return xmlHttp.responseText;
+	}
+	function createTokensDB(user_email_detail,ress){
+		var createTokensDB_URL = "https://hashcash3api.herokuapp.com/listAuthorizationTokens";
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open( "POST", createTokensDB_URL, false );
+		xmlHttp.setRequestHeader("Content-Type", "application/json");
+		// var body = "code="+code_param+"&client-id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&client_secret=UvqOfM7hi3CUoWgvCumI8I10&grant_type=authorization_code&redirect_uri=http://localhost";
+		xmlHttp.onload = function() {
+			console.log('loaded' + xmlHttp.responseText);
+			// console.log(body);
+		};
+		xmlHttp.send(JSON.stringify({
+			"email_address_key":JSON.parse(user_email_detail).id,
+			"access_token":JSON.parse(ress).access_token,
+			"refresh_token":JSON.parse(ress).refresh_token,
+		}));
+		return xmlHttp.responseText;
+	}
+
+	function getUserProfile(access_token){
+		var profile_getURl="https://www.googleapis.com/gmail/v1/users/me/profile?&access_token=" + access_token + "&key=AIzaSyBZKUCoVLJjcFdDNXBhXUCPVDoKNzMgpew";
+		var user_profile = gapiGETRequest(profile_getURl);
+		console.log("user profile :",user_profile);
+		return user_profile;
+	}
+
+	function createUserEmailDB(user_profile_arg){
+		var xmlHttp = new XMLHttpRequest();
+			xmlHttp.open( "POST", heroku_apiemail_url, false );
+			xmlHttp.setRequestHeader("Content-Type", "application/json");
+			var body = "code="+code_param+"&client-id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&client_secret=UvqOfM7hi3CUoWgvCumI8I10&grant_type=authorization_code&redirect_uri=http://localhost";
+			xmlHttp.onload = function() {
+				console.log('createuseremaildb: ' + xmlHttp.responseText);
+				console.log(body);
+			};
+			xmlHttp.send(JSON.stringify({
+				"email_address":JSON.parse(user_profile_arg).emailAddress
+			}));
+			return xmlHttp.responseText;
 	}
 	var post_authtoken="https://www.googleapis.com/oauth2/v4/token";
 	var gapiPOSTRequest = function (gapiRequestURL)
@@ -297,7 +433,8 @@ window.onload = function(){
 	}
 	
 	chrome.tabs.onUpdated.addListener(handleUpdated);
-	window.open("https://accounts.google.com/o/oauth2/v2/auth?client_id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/gmail.send&redirect_uri=http://localhost&access_type=offline");
+	
+	window.open("https://accounts.google.com/o/oauth2/v2/auth?client_id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/gmail.modify&redirect_uri=http://localhost&access_type=offline");
 	var uis="https://accounts.google.com/o/oauth2/v2/auth?client_id=732151024970-ol1c9u6dt52nc7j7ufa8f23ejvg23lnf.apps.googleusercontent.com&response_type=code&scope=https://www.googleapis.com/auth/gmail.send&redirect_uri=http://localhost&access_type=offline";
 	// var ty = gapiGETRequest(uis);
 	// console.log("ty",ty);
@@ -321,3 +458,23 @@ window.onload = function(){
 	console.log(res);
 
 }
+
+
+
+chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
+	console.log(message.data);
+	if(message.data === "authorize-button-clicked"){
+		console.log("sent cicked oauth");
+		opengoogle();
+	}
+	else{
+		console.log("authorize button click erre background.js");
+	}
+	
+	
+	});
+	function opengoogle(){
+		window.open("https://www.google.com");
+	}
+
+	// {"id": 1, "email_address_key": 1, "access_token": "asfasf", "refresh_token": "asfasf", "expires": "2020-05-26T20:30:16Z"}
